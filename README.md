@@ -1,0 +1,73 @@
+# MOVIE STOCK
+
+観た映画をコレクションに記録し、アチーブメントを解錠していく映画鑑賞ログ。
+仕様は [SPEC.md](SPEC.md)、デザインは [DESIGN.md](DESIGN.md)、開発計画は [TASKS.md](TASKS.md) を参照。
+
+## 技術スタック
+
+- Next.js 16（App Router / Turbopack）+ React 19 + TypeScript（strict）
+- Tailwind CSS v4（デザイントークンは `src/app/globals.css` の `@theme`）
+- Supabase（Auth + PostgreSQL + RLS）
+- TMDb API（作品情報。キーはサーバー側のみで保持）
+
+## セットアップ
+
+### 1. 依存関係
+
+```bash
+npm install
+```
+
+### 2. Supabase プロジェクト
+
+1. [Supabase](https://supabase.com/) でプロジェクトを作成する
+2. SQL Editor で `supabase/migrations/` 内の SQL を番号順に実行する
+   （または `npx supabase link` 後に `npx supabase db push`）
+3. Authentication > Sign In / Up で Email を有効にし、**Confirm email を ON** にする
+4. Authentication > URL Configuration の Site URL に開発時は
+   `http://localhost:3000` を設定する
+
+### 3. TMDb API
+
+[TMDb の API 設定](https://www.themoviedb.org/settings/api) で
+API Read Access Token を取得する（無料）。
+
+### 4. 環境変数
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local` に Supabase の URL / anon key / service_role key と
+TMDb のトークンを設定する。
+
+### 5. 起動
+
+```bash
+npm run dev
+```
+
+## スクリプト
+
+| コマンド | 内容 |
+|---|---|
+| `npm run dev` | 開発サーバー起動 |
+| `npm run build` | 本番ビルド |
+| `npm run lint` | ESLint |
+| `npm run type-check` | TypeScript 型チェック |
+| `npm run format` | Prettier で整形 |
+
+## 実装メモ
+
+- ユーザーデータのテーブルはすべて RLS（Row Level Security）で本人以外の
+  アクセスを遮断している。マイグレーション参照。
+- アチーブメントの定義は `achievements` テーブルのデータとして持つ。
+  追加は行の insert のみで、コード変更は不要（判定種別は
+  `src/lib/achievements.ts` の6種類）。
+- 1ユーザー1作品1記録（DB のユニーク制約）。再鑑賞は既存記録の編集で扱う。
+- 未実装（TASKS.md 参照）: ログイン試行制限（5回/10分ロック【仮】）、
+  週次バックアップ、TMDb 公式ロゴの帰属表示、Sentry 導入。
+
+## This product uses the TMDB API
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
