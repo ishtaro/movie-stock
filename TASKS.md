@@ -1,3 +1,5 @@
+
+
 # movie-stock 開発タスク・今後の方針
 
 SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
@@ -21,7 +23,7 @@ SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
 - [x] Next.js + TypeScript + Tailwind のプロジェクト初期化（Next.js 16 / React 19 / Tailwind v4）
 - [x] ESLint / Prettier / TypeScript strict 設定
 - [ ] GitHub リポジトリ整備（develop ブランチ作成、main/develop の運用開始）
-- [ ] GitHub Actions で lint / type-check / test の CI
+- [x] GitHub Actions で lint / type-check / test / build の CI
 - [ ] Supabase プロジェクト作成、ローカル開発環境（supabase cli）接続（※マイグレーション SQL は作成済み。手順は README.md）
 - [ ] TMDb API キー取得、環境変数管理（.env.local / Vercel 環境変数）（※.env.example 作成済み）
 - [ ] Vercel 連携（プレビューデプロイ確認）
@@ -36,7 +38,7 @@ SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
 - [x] 未ログイン時のリダイレクト（Next.js 16 の proxy.ts）
 - [ ] ログイン試行制限（5回失敗で10分ロック【仮】）
 - [x] 退会（auth ユーザー削除 + FK cascade による原子的な全データ削除）
-- [ ] RLS の越境アクセス拒否テスト（F-01 受け入れ基準2）
+- [ ] RLS の越境アクセス拒否テスト（F-01 受け入れ基準2）（※Supabase ローカルスタック（要 Docker）または実プロジェクトが必要。ポリシー定義はマイグレーションに実装済み）
 - [x] 未決-6: 開示しない汎用文言を採用（登録済みメールでも同じ成功メッセージ）
 
 ## フェーズ 2: 鑑賞記録のコア機能（F-03〜F-06）
@@ -63,7 +65,7 @@ SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
 - [ ] 未決-1: アチーブメント最終ラインナップの確定（※叩き台13個をシード投入済み）
 - [x] 解錠演出（トースト・順次表示・reduced-motion 対応）
 - [x] アチーブメント一覧画面（S-7): 解錠済み/未解錠の区別、進捗表示
-- [ ] 二重解錠・剥奪なしのテスト
+- [x] 二重解錠・剥奪なしのテスト（エンジン単体テストで検証。DB 制約自体の検証は RLS テストと同様に実環境が必要）
 
 ## フェーズ 4: リリース準備（F-09、非機能）
 
