@@ -56,6 +56,23 @@ npm run dev
 | `npm run lint` | ESLint |
 | `npm run type-check` | TypeScript 型チェック |
 | `npm run format` | Prettier で整形 |
+| `npm run test` | ユニット/コンポーネントテスト（Vitest） |
+| `npm run test:integration` | 実 DB 統合テスト（RLS・解錠・カスケード削除。要 `npx supabase start`） |
+| `npm run test:e2e` | E2E クリティカルパス（Playwright。要ローカルスタック） |
+
+## ローカル開発（Supabase ローカルスタック）
+
+Docker が使える環境ではクラウドプロジェクトなしで開発できる。
+
+```bash
+npx supabase start   # 初回はイメージ取得で数分かかる
+npx supabase status  # API URL / anon key / service_role key を確認 → .env.local へ
+npm run dev
+```
+
+- 確認メールはメールキャッチャー http://127.0.0.1:54324 （Mailpit）に届く
+- DB 管理は Supabase Studio http://127.0.0.1:54323
+- スキーマを作り直す場合は `npx supabase db reset`（migrations を再適用）
 
 ## 実装メモ
 
