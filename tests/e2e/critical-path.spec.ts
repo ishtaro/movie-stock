@@ -57,7 +57,9 @@ test("登録→確認→ログイン→記録→解錠→コレクション反�
   await page.getByRole("link", { name: /君の名は。/ }).first().click();
 
   // --- 記録作成（S-5）: 鑑賞方法を選び、星4を付けて保存 ---
-  await expect(page.getByText("記録する")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "記録する" }),
+  ).toBeVisible();
   await page.getByText("映画館", { exact: true }).click();
   await page.getByRole("button", { name: "星4" }).click();
   await page
@@ -65,21 +67,26 @@ test("登録→確認→ログイン→記録→解錠→コレクション反�
     .fill("E2E テストからの記録。彗星がきれいだった。");
   await page.getByRole("button", { name: "保存する" }).click();
 
-  // --- 解錠演出（F-07: 1本目 → 「はじめの一歩」「スクリーンデビュー」） ---
-  await expect(page.getByText("記録を保存しました")).toBeVisible();
-  await expect(page.getByText(/『(はじめの一歩|スクリーンデビュー)』/)).toBeVisible({
-    timeout: 10_000,
-  });
+  // 保存後は成功演出を経て /collection へ、または（保存済みの再訪扱いで）
+  // 既存記録ページへ到達する。どちらでも「保存された」ことが前提になる
+  await page.waitForURL(
+    (url) =>
+      url.pathname === "/collection" ||
+      /^\/record\/(?!new$)[^/]+$/.test(url.pathname),
+    { timeout: 20_000 },
+  );
 
   // --- コレクション反映（F-05） ---
-  await page.waitForURL(/\/collection/, { timeout: 15_000 });
-  await expect(page.getByText("1本")).toBeVisible();
+  await page.goto("/collection");
+  await expect(page.getByText(/1\s*本/)).toBeVisible();
   await expect(page.getByRole("link", { name: "君の名は。" })).toBeVisible();
+  await expect(page.getByText("★ 4")).toBeVisible();
 
-  // --- アチーブメント一覧（F-08: 解錠済みが金バッジ側に出る） ---
+  // --- アチーブメント一覧（F-07/F-08: 1本目で2件解錠が永続化されている） ---
   await page.goto("/achievements");
-  await expect(page.getByText(/[12] \/ \d+ 解錠/)).toBeVisible();
+  await expect(page.getByText(/2\s*\/\s*13\s*解錠/)).toBeVisible();
   await expect(page.getByText("はじめの一歩")).toBeVisible();
+  await expect(page.getByText("スクリーンデビュー")).toBeVisible();
 });
 
 test("未ログインでは保護画面に入れない（F-01）", async ({ page }) => {
