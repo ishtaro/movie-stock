@@ -1,0 +1,38 @@
+name: DB Backup
+
+# 週次バックアップ（SPEC.md 未決-4 の決定事項）。
+# Supabase 無料枠には自動バックアップがないため、pg_dump を GitHub Actions の
+# アーティファクトとして保存する（保持 90 日）。
+# 必要な Secret: SUPABASE_DB_URL（本番 DB の接続文字列。
+#   Supabase ダッシュボード > Connect > Direct connection の URI）
+
+on:
+  schedule:
+    - cron: "0 18 * * 0" # 毎週月曜 03:00 JST
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SUPABASE_DB_URL の確認
+        run: |
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ]; then
+            echo "::error::Secret SUPABASE_DB_URL が未設定です"
+            exit 1
+          fi
+
+      - name: pg_dump 実行
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+            --schema=public --schema=auth \
+            --no-owner --no-privileges \
+            -F c -f "backup-$(date -u +%Y%m%d).dump"
+
+      - name: アーティファクトとして保存（90日保持）
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backup-*.dump
+          retention-days: 90
