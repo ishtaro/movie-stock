@@ -1,20 +1,30 @@
+import Image from "next/image";
+
 /**
  * TMDb 帰属表示（SPEC.md F-09）。全画面共通で常時表示する。
- * TODO(フェーズ4): TMDb 公式ロゴ画像を配置する（利用規約のブランディング要件）
+ * ロゴは TMDb 公式ブランドアセット（blue short）。
  */
 export function TmdbAttribution() {
   return (
-    <p className="text-center text-[11px] leading-relaxed text-fg-mute">
-      This product uses the{" "}
+    <div className="flex flex-col items-center gap-2">
       <a
         href="https://www.themoviedb.org/"
         target="_blank"
         rel="noopener noreferrer"
-        className="underline underline-offset-2 hover:text-fg-sub"
+        aria-label="The Movie Database"
       >
-        TMDB
-      </a>{" "}
-      API but is not endorsed or certified by TMDB.
-    </p>
+        <Image
+          src="/tmdb-logo.svg"
+          alt="TMDB"
+          width={92}
+          height={12}
+          className="opacity-70"
+        />
+      </a>
+      <p className="text-center text-[11px] leading-relaxed text-fg-mute">
+        This product uses the TMDB API but is not endorsed or certified by
+        TMDB.
+      </p>
+    </div>
   );
 }
