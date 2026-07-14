@@ -85,6 +85,22 @@ npm run dev
 - 未実装（TASKS.md 参照）: ログイン試行制限（5回/10分ロック【仮】）、
   週次バックアップ、TMDb 公式ロゴの帰属表示、Sentry 導入。
 
+## 本番デプロイ（フェーズ4）
+
+1. **Supabase 本番プロジェクト作成**（supabase.com）
+   - `npx supabase link --project-ref <ref>` → `npx supabase db push` でマイグレーション適用
+     （GRANT を含む全マイグレーションが必須）
+   - Authentication > Sign In / Up: Email 有効 + Confirm email ON
+   - Authentication > URL Configuration: Site URL に本番 URL、
+     Redirect URLs に `https://<本番ドメイン>/auth/confirm` を追加
+2. **Vercel プロジェクト作成**（GitHub リポジトリを import）
+   - 環境変数: `.env.example` の4変数 + `NEXT_PUBLIC_SITE_URL`（本番 URL）
+3. **バックアップ用 Secret**: GitHub リポジトリの Settings > Secrets に
+   `SUPABASE_DB_URL`（Direct connection の URI）を設定
+   → 週次バックアップ（.github/workflows/backup.yml）が有効になる
+4. デプロイ後の確認: 登録→メール確認→記録→解錠の一連フロー、
+   性能（一覧2秒以内・保存1秒以内・検索3秒以内）の再測定
+
 ## This product uses the TMDB API
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
