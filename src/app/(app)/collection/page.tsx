@@ -2,6 +2,11 @@ import { Clapperboard } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import {
+  DiscoverSection,
+  DiscoverSectionSkeleton,
+} from "@/components/discover-section";
 import { Poster } from "@/components/poster";
 import { createClient } from "@/lib/supabase/server";
 import type { RecordWithMovie } from "@/lib/types";
@@ -127,7 +132,7 @@ export default async function CollectionPage({
 
           {lastPage > 1 && (
             <nav
-              aria-label="ページ"
+              aria-label="ページャ"
               className="mt-6 flex items-center justify-center gap-4 text-sm"
             >
               {page > 1 ? (
@@ -157,6 +162,11 @@ export default async function CollectionPage({
           )}
         </>
       )}
+
+      {/* おすすめ（F-11）: 一覧本体の表示を遅延させないようストリーミングで差し込む */}
+      <Suspense fallback={<DiscoverSectionSkeleton />}>
+        <DiscoverSection userId={user.id} />
+      </Suspense>
     </>
   );
 }

@@ -15,7 +15,7 @@ export default defineConfig({
     environment: "jsdom",
     // Testing Library の自動クリーンアップ（afterEach）に必要
     globals: true,
-    // 統合テストはローカル Supabase が必要なため通常実行から除外（vitest.integration.config.ts で実行）
-    exclude: ["**/node_modules/**", "tests/integration/**"],
+    // 統合テスト（要ローカル Supabase）と E2E（Playwright）は通常実行から除外
+    exclude: ["**/node_modules/**", "tests/integration/**", "tests/e2e/**"],
   },
 });

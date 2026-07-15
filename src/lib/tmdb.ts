@@ -65,6 +65,51 @@ export async function searchMovies(query: string): Promise<TmdbSearchResult[]> {
   }));
 }
 
+/** おすすめカテゴリ（SPEC.md F-11【仮】）。genreId は TMDb のジャンル ID */
+export const DISCOVER_CATEGORIES = [
+  { label: "いま人気", genreId: null },
+  { label: "アクション", genreId: 28 },
+  { label: "ホラー", genreId: 27 },
+  { label: "コメディ", genreId: 35 },
+  { label: "SF", genreId: 878 },
+  { label: "アニメーション", genreId: 16 },
+  { label: "ロマンス", genreId: 10749 },
+  { label: "スリラー", genreId: 53 },
+  { label: "アドベンチャー", genreId: 12 },
+  { label: "ミステリー", genreId: 9648 },
+] as const;
+
+export type DiscoverCategory = (typeof DISCOVER_CATEGORIES)[number];
+
+/** カテゴリの人気作品（20件 = TMDb の1ページ）。genreId が null なら全ジャンル */
+export async function discoverMovies(
+  genreId: number | null,
+): Promise<TmdbSearchResult[]> {
+  const params: Record<string, string> = {
+    sort_by: "popularity.desc",
+    include_adult: "false",
+    "vote_count.gte": "100", // 極端にマイナーな作品を避ける【仮】
+    page: "1",
+  };
+  if (genreId !== null) params.with_genres = String(genreId);
+
+  const data = await tmdbFetch<{
+    results: {
+      id: number;
+      title: string;
+      release_date?: string;
+      poster_path: string | null;
+    }[];
+  }>("/discover/movie", params);
+
+  return data.results.map((r) => ({
+    tmdbId: r.id,
+    title: r.title,
+    releaseYear: r.release_date ? r.release_date.slice(0, 4) : null,
+    posterPath: r.poster_path,
+  }));
+}
+
 /** 作品詳細（ジャンル名を含む） */
 export async function getMovie(tmdbId: number): Promise<TmdbMovie> {
   const data = await tmdbFetch<{

@@ -82,6 +82,14 @@ test("登録→確認→ログイン→記録→解錠→コレクション反�
   await expect(page.getByRole("link", { name: "君の名は。" })).toBeVisible();
   await expect(page.getByText("★ 4")).toBeVisible();
 
+  // --- おすすめセクション（F-11: ランダムカテゴリで最大10件） ---
+  await expect(page.getByRole("heading", { name: /おすすめ/ })).toBeVisible({
+    timeout: 15_000,
+  });
+  const recommended = page.locator('a[href^="/record/new?tmdbId="]');
+  expect(await recommended.count()).toBeGreaterThan(0);
+  expect(await recommended.count()).toBeLessThanOrEqual(10);
+
   // --- アチーブメント一覧（F-07/F-08: 1本目で2件解錠が永続化されている） ---
   await page.goto("/achievements");
   await expect(page.getByText(/2\s*\/\s*13\s*解錠/)).toBeVisible();
