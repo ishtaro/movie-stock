@@ -3,8 +3,9 @@ name: DB Backup
 # 週次バックアップ（SPEC.md 未決-4 の決定事項）。
 # Supabase 無料枠には自動バックアップがないため、pg_dump を GitHub Actions の
 # アーティファクトとして保存する（保持 90 日）。
-# 必要な Secret: SUPABASE_DB_URL（本番 DB の接続文字列。
-#   Supabase ダッシュボード > Connect > Direct connection の URI）
+# 必要な Secret: SUPABASE_DB_URL（本番 DB の接続文字列）
+#   Supabase ダッシュボード > Connect > Connection String > Session pooler の URI を使う
+#   （Direct connection は IPv6 専用のため GitHub Actions からは接続不可）
 
 on:
   schedule:
@@ -22,10 +23,12 @@ jobs:
             exit 1
           fi
 
-      - name: pg_dump 実行
+      - name: pg_dump 実行（本番は Postgres 17 のためクライアントもv17を導入）
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
-          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y > /dev/null
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
             --schema=public --schema=auth \
             --no-owner --no-privileges \
             -F c -f "backup-$(date -u +%Y%m%d).dump"

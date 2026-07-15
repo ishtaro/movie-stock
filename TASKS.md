@@ -22,8 +22,8 @@ SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
 
 - [x] Next.js + TypeScript + Tailwind のプロジェクト初期化（Next.js 16 / React 19 / Tailwind v4）
 - [x] ESLint / Prettier / TypeScript strict 設定
-- [ ] GitHub リポジトリ整備（develop ブランチ作成、main/develop の運用開始）
-- [x] GitHub Actions で lint / type-check / test / build の CI
+- [x] GitHub リポジトリ整備（main/develop 作成・デフォルト develop・両ブランチに PR 必須/強制 push 禁止/削除禁止のルールセット。2026-07-15）
+- [x] GitHub Actions CI: check（lint/型/ユニット/ビルド）+ integration-e2e（Supabase ローカルスタックでの統合13件 + Playwright E2E 3本）の2ジョブ構成
 - [x] ローカル開発環境（supabase cli + Docker）接続・マイグレーション適用（※本番用クラウドプロジェクトの作成は未。手順は README.md）
 - [x] TMDb API キー取得、環境変数管理（.env.local 設定済み / Vercel 環境変数は未）
 - [ ] Vercel 連携（プレビューデプロイ確認）
@@ -98,6 +98,8 @@ SPEC.md の要件を実現するためのフェーズ分割とタスク一覧。
 
 ## 運用ルール
 
-- ブランチ: `feature/` `fix/` `chore/` プレフィックス。main / develop への直接コミット禁止、マージは PR 経由（マージ先は develop）
+- ブランチ: `feature/` `fix/` `chore/` プレフィックス。main / develop への直接コミット禁止（ルールセットで強制）、マージは PR 経由（マージ先は develop）
+- リリース: develop → main の PR。main へのマージで Vercel が本番へ自動デプロイ（Git 連携）
 - コミット: Conventional Commits（日本語説明文）
+- CI: 全 PR と main/develop への push で実行。check ジョブ（数分）+ integration-e2e ジョブ（Supabase スタック起動込み）
 - 各フェーズ完了時に SPEC.md の未決事項リストを見直し、決定済みの項目は本文へ反映して未決から削除する
