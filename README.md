@@ -93,6 +93,19 @@ npm run dev
   （Supabase と別リージョンになると DB 往復で保存が数秒かかる）
 - 既知の制約: 内蔵 SMTP のメール送信は2通/時。正式公開前にカスタム SMTP を設定する
 
+## CI/CD
+
+- **ブランチ運用**: `feature/*` → PR → `develop`（デフォルト）→ リリース時に PR → `main`。
+  main / develop は直接 push 禁止（ルールセットで強制）
+- **CI**（.github/workflows/ci.yml。全 PR + main/develop への push で実行）
+  - `check`: lint / 型チェック / ユニットテスト / ビルド
+  - `integration-e2e`: GitHub Actions 上で Supabase ローカルスタックを起動し、
+    実 DB 統合テスト（RLS 等）と Playwright E2E を実行
+- **CD**: main へのマージで Vercel が本番へ自動デプロイ、PR ごとにプレビューデプロイ
+  （Vercel の GitHub 連携。Production Branch = main）
+- **必要な Secrets**: `TMDB_API_READ_ACCESS_TOKEN`（CI 用・設定済み）、
+  `SUPABASE_DB_URL`（週次バックアップ用）
+
 ## 本番デプロイ（フェーズ4）
 
 1. **Supabase 本番プロジェクト作成**（supabase.com）

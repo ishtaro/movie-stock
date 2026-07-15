@@ -6,7 +6,8 @@ on:
   pull_request:
 
 jobs:
-  ci:
+  # 静的検査 + ユニットテスト + ビルド（常に高速に回す）
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +26,7 @@ jobs:
       - name: 型チェック
         run: npm run type-check
 
-      - name: テスト
+      - name: ユニットテスト
         run: npm test
 
       - name: ビルド
@@ -34,3 +35,52 @@ jobs:
           # ビルド検証用のプレースホルダー（実値は Vercel 側で管理）
           NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+
+  # 実 DB（Supabase ローカルスタック）+ 実ブラウザでの検証
+  integration-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 依存関係のインストール
+        run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase ローカルスタック起動（マイグレーション自動適用）
+        run: supabase start
+
+      - name: .env.local 生成
+        run: |
+          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)')"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "TMDB_API_READ_ACCESS_TOKEN=${{ secrets.TMDB_API_READ_ACCESS_TOKEN }}"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+          } > .env.local
+
+      - name: 統合テスト（RLS 越境・重複制約・実 DB 解錠・カスケード削除・実 TMDb）
+        run: npm run test:integration
+
+      - name: Playwright ブラウザ導入
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E（登録→メール確認→記録→解錠 / レスポンシブ）
+        run: npm run test:e2e
+
+      - name: 失敗時は Playwright の実行結果を保存
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
