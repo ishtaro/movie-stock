@@ -85,6 +85,14 @@ npm run dev
 - 未実装（TASKS.md 参照）: ログイン試行制限（5回/10分ロック【仮】）、
   週次バックアップ、TMDb 公式ロゴの帰属表示、Sentry 導入。
 
+## 本番環境
+
+- URL: https://movie-stock-phi.vercel.app
+- Supabase: `movie-stock`（ap-northeast-1 / 東京）
+- Vercel: 関数リージョンを vercel.json で東京（hnd1）に固定
+  （Supabase と別リージョンになると DB 往復で保存が数秒かかる）
+- 既知の制約: 内蔵 SMTP のメール送信は2通/時。正式公開前にカスタム SMTP を設定する
+
 ## 本番デプロイ（フェーズ4）
 
 1. **Supabase 本番プロジェクト作成**（supabase.com）
